@@ -1,4 +1,4 @@
-package core.bean;
+package cn.xuele.minispring.beans;
 
 
 import lombok.AllArgsConstructor;

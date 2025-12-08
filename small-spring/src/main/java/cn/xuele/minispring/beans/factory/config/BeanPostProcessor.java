@@ -1,4 +1,4 @@
-package core.processor;
+package cn.xuele.minispring.beans.factory.config;
 
 /**
  * @author XueLe

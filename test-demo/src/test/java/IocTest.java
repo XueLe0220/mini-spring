@@ -1,8 +1,11 @@
-import core.bean.BeanDefinition;
-import core.bean.BeanReference;
-import core.bean.PropertyValue;
-import core.factory.BeanFactory;
-import core.factory.DefaultListableBeanFactory;
+import cn.xuele.minispring.beans.factory.config.BeanDefinition;
+import cn.xuele.minispring.beans.factory.config.BeanReference;
+import cn.xuele.minispring.beans.PropertyValue;
+import cn.xuele.minispring.beans.factory.BeanFactory;
+import cn.xuele.minispring.beans.factory.support.DefaultListableBeanFactory;
+import cn.xuele.test.bean.OrderService;
+import cn.xuele.test.bean.UserService;
+import cn.xuele.test.common.MyBeanPostProcessor;
 import org.junit.jupiter.api.Test;
 
 

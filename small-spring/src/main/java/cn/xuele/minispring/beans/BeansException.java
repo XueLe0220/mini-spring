@@ -1,4 +1,4 @@
-package core.exception;
+package cn.xuele.minispring.beans;
 
 
 /**

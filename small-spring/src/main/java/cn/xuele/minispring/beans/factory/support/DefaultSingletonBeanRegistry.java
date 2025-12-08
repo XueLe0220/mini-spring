@@ -1,6 +1,6 @@
-package core.registry;
+package cn.xuele.minispring.beans.factory.support;
 
-import core.bean.DisposableBean;
+import cn.xuele.minispring.beans.factory.DisposableBean;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,14 +1,14 @@
-package core.factory;
+package cn.xuele.minispring.beans.factory.support;
 
 
-import core.bean.BeanDefinition;
-import core.bean.BeanReference;
-import core.bean.DisposableBean;
-import core.bean.InitializingBean;
-import core.bean.PropertyValue;
-import core.exception.BeansException;
-import core.processor.BeanPostProcessor;
-import core.registry.DefaultSingletonBeanRegistry;
+import cn.xuele.minispring.beans.BeansException;
+import cn.xuele.minispring.beans.factory.BeanFactory;
+import cn.xuele.minispring.beans.factory.config.BeanDefinition;
+import cn.xuele.minispring.beans.factory.config.BeanReference;
+import cn.xuele.minispring.beans.factory.DisposableBean;
+import cn.xuele.minispring.beans.factory.InitializingBean;
+import cn.xuele.minispring.beans.PropertyValue;
+import cn.xuele.minispring.beans.factory.config.BeanPostProcessor;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

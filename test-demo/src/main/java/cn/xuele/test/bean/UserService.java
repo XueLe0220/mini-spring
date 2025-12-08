@@ -1,5 +1,7 @@
-import core.bean.DisposableBean;
-import core.bean.InitializingBean;
+package cn.xuele.test.bean;
+
+import cn.xuele.minispring.beans.factory.DisposableBean;
+import cn.xuele.minispring.beans.factory.InitializingBean;
 
 /**
  * @author XueLe

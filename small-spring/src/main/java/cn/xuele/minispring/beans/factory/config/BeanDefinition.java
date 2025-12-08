@@ -1,5 +1,6 @@
-package core.bean;
+package cn.xuele.minispring.beans.factory.config;
 
+import cn.xuele.minispring.beans.PropertyValue;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
