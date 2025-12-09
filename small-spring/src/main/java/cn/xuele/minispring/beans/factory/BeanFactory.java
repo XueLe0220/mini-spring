@@ -23,10 +23,10 @@ public interface BeanFactory {
     /**
      * 根据 Bean 的名称注册 Bean 定义
      *
-     * @param beanDefinition
-     * @param name
+     * @param name  Bean 名称
+     * @param beanDefinition Bean 定义
      */
-    void registerBeanDefinition(BeanDefinition beanDefinition, String name);
+    void registerBeanDefinition(String name, BeanDefinition beanDefinition);
 
     /**
      * 销毁随容器消亡的 Bean

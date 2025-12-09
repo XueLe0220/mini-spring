@@ -77,7 +77,7 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
     }
 
     @Override
-    public void registerBeanDefinition(BeanDefinition beanDefinition, String name) {
+    public void registerBeanDefinition(String name, BeanDefinition beanDefinition) {
         beanMap.put(name, beanDefinition);
     }
 

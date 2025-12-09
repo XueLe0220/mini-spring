@@ -2,26 +2,43 @@ package cn.xuele.test.bean;
 
 import cn.xuele.minispring.beans.factory.DisposableBean;
 import cn.xuele.minispring.beans.factory.InitializingBean;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author XueLe
  * @since 2025/12/7
  */
+@Getter
 public class UserService implements InitializingBean, DisposableBean {
 
     private String userName;
+    private final StringBuilder statusRecorder = new StringBuilder();
+    @Setter
+    private boolean beforeInitializationFlag = false;
+    @Setter
+    private boolean afterInitializationFlag = false;
 
-    public void fakeService() {
-        System.out.println("测试方法" + userName);
+    // 模拟查询用户信息
+    public String queryUserInfo() {
+        return "查询用户:" + userName;
     }
 
+    // Bean 销毁方法
     @Override
     public void destroy() {
-        System.out.println("销毁" + userName);
+        // 记录销毁状态
+        System.out.println("执行销毁方法...");
+        statusRecorder.append("_destroy_done");
     }
 
+    // Bean 初始化方法
     @Override
     public void afterPropertiesSet() {
-        System.out.println(userName + "连接数据库");
+        // 不再只打印，而是记录状态
+        System.out.println("执行初始化方法...");
+        statusRecorder.append("init_done");
     }
+
+
 }
