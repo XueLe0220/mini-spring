@@ -37,11 +37,6 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
     }
 
     @Override
-    public void loadBeanDefinitions(Resource resource) throws BeansException {
-
-    }
-
-    @Override
     public void loadBeanDefinitions(Resource... resources) throws BeansException {
         for (Resource resource : resources) {
             loadBeanDefinitions(resource);
