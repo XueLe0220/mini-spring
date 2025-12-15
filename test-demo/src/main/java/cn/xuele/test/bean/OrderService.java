@@ -6,6 +6,7 @@ import lombok.Getter;
  * @author XueLe
  * @since 2025/12/7
  */
+@Getter
 public class OrderService {
     private String shopName;
     @Getter

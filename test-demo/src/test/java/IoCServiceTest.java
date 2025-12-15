@@ -4,10 +4,12 @@ import cn.xuele.minispring.aop.aspectj.ClassFilter;
 import cn.xuele.minispring.aop.aspectj.MethodMatcher;
 import cn.xuele.minispring.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import cn.xuele.minispring.beans.PropertyValue;
+import cn.xuele.minispring.beans.factory.BeanFactory;
 import cn.xuele.minispring.beans.factory.config.BeanDefinition;
 import cn.xuele.minispring.beans.factory.config.BeanReference;
 import cn.xuele.minispring.beans.factory.support.DefaultListableBeanFactory;
 import cn.xuele.minispring.beans.factory.support.DefaultSingletonBeanRegistry;
+import cn.xuele.minispring.beans.factory.support.XmlBeanDefinitionReader;
 import cn.xuele.minispring.core.io.ClassPathResource;
 import cn.xuele.minispring.core.io.DefaultResourceLoader;
 import cn.xuele.minispring.core.io.FileSystemResource;
@@ -194,13 +196,16 @@ public class IoCServiceTest {
         // 1.4 注册切面到容器
         beanFactory.registerBeanDefinition("advisor", new BeanDefinition(AspectJExpressionPointcutAdvisor.class));
         //  简化注册，直接把准备好的 advisor 实例塞进单例池
-        Method addSingleton = DefaultSingletonBeanRegistry.class.getDeclaredMethod("addSingleton", String.class, Object.class);
+        Method addSingleton = DefaultSingletonBeanRegistry.class.getDeclaredMethod("addSingleton", String.class,
+                Object.class);
         addSingleton.setAccessible(true);
         addSingleton.invoke(beanFactory, "advisor", advisor);
         // 1.5 注册自动代理器
-        beanFactory.registerBeanDefinition("autoProxyCreator", new BeanDefinition(DefaultAdvisorAutoProxyCreator.class));
+        beanFactory.registerBeanDefinition("autoProxyCreator",
+                new BeanDefinition(DefaultAdvisorAutoProxyCreator.class));
         // 1.6 容器创建自动代理器 bean
-        DefaultAdvisorAutoProxyCreator autoProxyCreator = (DefaultAdvisorAutoProxyCreator) beanFactory.getBean("autoProxyCreator");
+        DefaultAdvisorAutoProxyCreator autoProxyCreator = (DefaultAdvisorAutoProxyCreator) beanFactory.getBean(
+                "autoProxyCreator");
         // 1.7 手动将自动代理器添加进容器 BPP 列表
         beanFactory.addBeanPostProcessor(autoProxyCreator);
 
@@ -215,7 +220,7 @@ public class IoCServiceTest {
     }
 
     @Test
-    public void test_resource_loader(){
+    public void test_resource_loader() {
         // 1. Setup
         // 1.1 初始化资源加载器
         ResourceLoader resourceLoader = new DefaultResourceLoader();
@@ -231,5 +236,25 @@ public class IoCServiceTest {
         assertInstanceOf(ClassPathResource.class, classpathResource);
         assertInstanceOf(FileSystemResource.class, fileSystemResource);
         assertNotEquals(UrlResource.class, fileSystemResource.getClass());
+    }
+
+    @Test
+    public void test_xml_loader() {
+        // 1. Setup
+        // 1.1 初始化工厂
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        // 1.2 初始化xml解析器
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+
+        // 2. Execute
+        reader.loadBeanDefinitions("classpath:spring.xml");
+        UserService userService = (UserService) beanFactory.getBean("userService");
+        OrderService orderService = (OrderService) beanFactory.getBean("orderService");
+
+        // 3. Assert
+        assertEquals("UserFromXML", userService.getUserName());
+        assertEquals("Tencent Store", orderService.getShopName());
+        assertSame(orderService.getUserService(), userService);
+
     }
 }

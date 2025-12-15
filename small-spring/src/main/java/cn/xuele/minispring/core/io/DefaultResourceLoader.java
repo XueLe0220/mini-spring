@@ -14,7 +14,7 @@ public class DefaultResourceLoader implements ResourceLoader {
     public Resource getResource(String location) {
         // 1.处理前缀
         if (location.startsWith(CLASSPATH_URL_PREFIX)) {
-            return new ClassPathResource(location);
+            return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()));
         } else {
             // 2.尝试当成 url 处理
             try {
