@@ -1,7 +1,11 @@
 package cn.xuele.minispring.beans.factory.support;
 
+import cn.xuele.minispring.beans.BeansException;
 import cn.xuele.minispring.core.io.DefaultResourceLoader;
+import cn.xuele.minispring.core.io.Resource;
 import cn.xuele.minispring.core.io.ResourceLoader;
+
+import java.io.IOException;
 
 /**
  * @author XueLe
@@ -32,4 +36,28 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
         return resourceLoader;
     }
 
+    @Override
+    public void loadBeanDefinitions(Resource resource) throws BeansException {
+
+    }
+
+    @Override
+    public void loadBeanDefinitions(Resource... resources) throws BeansException {
+        for (Resource resource : resources) {
+            loadBeanDefinitions(resource);
+        }
+    }
+
+    @Override
+    public void loadBeanDefinitions(String location) throws BeansException {
+        Resource resource = resourceLoader.getResource(location);
+        loadBeanDefinitions(resource);
+    }
+
+    @Override
+    public void loadBeanDefinitions(String... locations) throws BeansException {
+        for (String location : locations) {
+            loadBeanDefinitions(location);
+        }
+    }
 }
