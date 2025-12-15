@@ -1,12 +1,14 @@
 package cn.xuele.minispring.aop.framework;
 
+import cn.xuele.minispring.aop.Advice;
+
 /**
  * 方法拦截器接口
  * 用户将实现此接口来编写增强逻辑（如监控、事务）
  *
  * @author XueLe
  */
-public interface MethodInterceptor extends Advice{
+public interface MethodInterceptor extends Advice {
     /**
      * 执行拦截逻辑
      * @param invocation 方法调用信息包装

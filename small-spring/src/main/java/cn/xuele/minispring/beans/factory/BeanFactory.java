@@ -20,9 +20,4 @@ public interface BeanFactory {
      */
     Object getBean(String name) throws BeansException;
 
-
-    /**
-     * 销毁随容器消亡的 Bean
-     */
-    void close();
 }

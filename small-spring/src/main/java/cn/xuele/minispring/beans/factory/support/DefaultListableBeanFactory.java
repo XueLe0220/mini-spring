@@ -4,6 +4,8 @@ package cn.xuele.minispring.beans.factory.support;
 import cn.xuele.minispring.beans.BeansException;
 import cn.xuele.minispring.beans.factory.BeanFactory;
 import cn.xuele.minispring.beans.factory.BeanFactoryAware;
+import cn.xuele.minispring.beans.factory.ConfigurableBeanFactory;
+import cn.xuele.minispring.beans.factory.ListableBeanFactory;
 import cn.xuele.minispring.beans.factory.config.BeanDefinition;
 import cn.xuele.minispring.beans.factory.config.BeanReference;
 import cn.xuele.minispring.beans.factory.DisposableBean;
@@ -23,7 +25,7 @@ import java.util.Map;
  *
  * @author XueLe
  */
-public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory, BeanDefinitionRegistry {
+public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry implements ListableBeanFactory, ConfigurableBeanFactory, BeanDefinitionRegistry {
 
 
     // 存储 Bean 定义的容器
@@ -92,17 +94,13 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
         destroySingletons();
     }
 
+    @Override
     public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
         beanPostProcessors.add(beanPostProcessor);
     }
 
 
-    /**
-     * 根据类型获取所有的 Bean 实例
-     *
-     * @param type 目标类型
-     * @return Map<BeanName, BeanInstance>
-     */
+    @Override
     public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
         Map<String, T> result = new HashMap<>();
         // 1. 遍历 beanMap (我们存储 BeanDefinition 的地方)

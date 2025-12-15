@@ -1,14 +1,15 @@
 package cn.xuele.minispring.aop.framework.autoproxy;
 
 import cn.xuele.minispring.aop.aspectj.AspectJExpressionPointcutAdvisor;
-import cn.xuele.minispring.aop.framework.Advisor;
-import cn.xuele.minispring.aop.framework.Advice;
+import cn.xuele.minispring.aop.Advisor;
+import cn.xuele.minispring.aop.Advice;
 import cn.xuele.minispring.aop.Pointcut;
 import cn.xuele.minispring.aop.framework.CglibAopProxy;
 import cn.xuele.minispring.aop.framework.MethodInterceptor;
 import cn.xuele.minispring.beans.BeansException;
 import cn.xuele.minispring.beans.factory.BeanFactory;
 import cn.xuele.minispring.beans.factory.BeanFactoryAware;
+import cn.xuele.minispring.beans.factory.ListableBeanFactory;
 import cn.xuele.minispring.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import cn.xuele.minispring.beans.factory.support.DefaultListableBeanFactory;
 
@@ -23,11 +24,11 @@ import java.util.Map;
  */
 public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPostProcessor, BeanFactoryAware {
 
-    private DefaultListableBeanFactory beanFactory;
+    private ListableBeanFactory beanFactory;
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = (DefaultListableBeanFactory) beanFactory;
+        this.beanFactory = (ListableBeanFactory) beanFactory;
     }
 
     @Override

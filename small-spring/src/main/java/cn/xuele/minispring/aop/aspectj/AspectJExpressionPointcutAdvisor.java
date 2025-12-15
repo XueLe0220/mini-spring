@@ -2,7 +2,7 @@ package cn.xuele.minispring.aop.aspectj;
 
 import cn.xuele.minispring.aop.Pointcut;
 import cn.xuele.minispring.aop.PointcutAdvisor;
-import cn.xuele.minispring.aop.framework.Advice;
+import cn.xuele.minispring.aop.Advice;
 import lombok.Setter;
 
 /**

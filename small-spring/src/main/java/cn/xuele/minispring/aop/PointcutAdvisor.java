@@ -1,7 +1,5 @@
 package cn.xuele.minispring.aop;
 
-import cn.xuele.minispring.aop.framework.Advisor;
-
 /**
  * 带有切点的 Advisor
  * 绝大多数 AOP 切面都通过此接口管理

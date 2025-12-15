@@ -1,4 +1,4 @@
-package cn.xuele.minispring.aop.framework;
+package cn.xuele.minispring.aop;
 
 /**
  * Advisor 访问者接口

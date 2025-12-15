@@ -1,4 +1,4 @@
-package cn.xuele.minispring.aop.framework;
+package cn.xuele.minispring.aop;
 
 /**
  * AOP 增强接口（标记接口）
