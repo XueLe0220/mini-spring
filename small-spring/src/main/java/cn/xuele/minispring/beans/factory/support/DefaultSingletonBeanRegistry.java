@@ -16,6 +16,7 @@ public class DefaultSingletonBeanRegistry {
     // 存储容器关闭时需要销毁的 Bean
     private final Map<String, DisposableBean> disposableBeans = new HashMap<>();
 
+    // 将创建好的 bean 存入缓存
     protected void addSingleton(String name, Object bean) {
         beanRegistry.put(name, bean);
     }

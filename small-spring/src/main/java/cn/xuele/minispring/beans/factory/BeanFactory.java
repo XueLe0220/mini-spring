@@ -20,13 +20,6 @@ public interface BeanFactory {
      */
     Object getBean(String name) throws BeansException;
 
-    /**
-     * 根据 Bean 的名称注册 Bean 定义
-     *
-     * @param name  Bean 名称
-     * @param beanDefinition Bean 定义
-     */
-    void registerBeanDefinition(String name, BeanDefinition beanDefinition);
 
     /**
      * 销毁随容器消亡的 Bean

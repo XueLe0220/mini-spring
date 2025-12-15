@@ -3,6 +3,7 @@ package cn.xuele.minispring.beans.factory.support;
 
 import cn.xuele.minispring.beans.BeansException;
 import cn.xuele.minispring.beans.factory.BeanFactory;
+import cn.xuele.minispring.beans.factory.BeanFactoryAware;
 import cn.xuele.minispring.beans.factory.config.BeanDefinition;
 import cn.xuele.minispring.beans.factory.config.BeanReference;
 import cn.xuele.minispring.beans.factory.DisposableBean;
@@ -22,7 +23,7 @@ import java.util.Map;
  *
  * @author XueLe
  */
-public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory {
+public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory, BeanDefinitionRegistry {
 
 
     // 存储 Bean 定义的容器
@@ -35,14 +36,14 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
     @Override
     public Object getBean(String name) {
 
-        // 查询 bean 缓存
+        // 查询 bean 缓存，实现单例模式
         Object singleton = getSingleton(name);
         if (singleton != null) {
             return singleton;
         }
 
 
-        // 获取配置
+        // 获取 bean 定义，若没有 则抛出异常
         BeanDefinition beanDefinition = beanMap.get(name);
         if (null == beanDefinition) {
             throw new BeansException("No bean named '" + name + "' is defined");
@@ -58,7 +59,7 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
             // 属性填充
             applyPropertyValues(bean, beanDefinition);
 
-            // bean 初始化
+            // bean 初始化 在这一步完成对实例化 bean 的后置处理
             bean = initializeBean(name, bean, beanDefinition);
 
             // 查询是否需要随容器消亡
@@ -82,12 +83,36 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
     }
 
     @Override
+    public boolean containsBeanDefinition(String beanName) {
+        return beanMap.containsKey(beanName);
+    }
+
+    @Override
     public void close() {
         destroySingletons();
     }
 
     public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
         beanPostProcessors.add(beanPostProcessor);
+    }
+
+
+    /**
+     * 根据类型获取所有的 Bean 实例
+     *
+     * @param type 目标类型
+     * @return Map<BeanName, BeanInstance>
+     */
+    public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
+        Map<String, T> result = new HashMap<>();
+        // 1. 遍历 beanMap (我们存储 BeanDefinition 的地方)
+        beanMap.forEach((beanName, beanDefinition) -> {
+            Class<?> beanClass = beanDefinition.getBeanClass();
+            if (type.isAssignableFrom(beanClass)) {
+                result.put(beanName, (T) getBean(beanName));
+            }
+        });
+        return result;
     }
 
     /**
@@ -127,12 +152,26 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
         }
     }
 
+    /**
+     * bean 初始化
+     * 遍历 beanPostProcessors(bean 后置处理器), 对已经实例化的 bean 进行处理
+     *
+     * @param beanName       -  bean名称
+     * @param bean           - 实例化的 bean
+     * @param beanDefinition = bean 的定义信息
+     * @return
+     */
     private Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) {
+
+        if (bean instanceof BeanFactoryAware) {
+            ((BeanFactoryAware) bean).setBeanFactory(this);
+        }
+
 
         // 前置处理
         for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
             Object current = beanPostProcessor.postProcessBeforeInitialization(bean, beanName);
-            if(current != null){
+            if (current != null) {
                 bean = current;
             }
         }
@@ -145,7 +184,7 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
         // 后置处理
         for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
             Object current = beanPostProcessor.postProcessAfterInitialization(bean, beanName);
-            if(current != null){
+            if (current != null) {
                 bean = current;
             }
         }

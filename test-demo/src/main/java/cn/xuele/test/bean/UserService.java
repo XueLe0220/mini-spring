@@ -10,14 +10,15 @@ import lombok.Setter;
  * @since 2025/12/7
  */
 @Getter
+@Setter
 public class UserService implements InitializingBean, DisposableBean {
 
     private String userName;
     private final StringBuilder statusRecorder = new StringBuilder();
-    @Setter
     private boolean beforeInitializationFlag = false;
-    @Setter
     private boolean afterInitializationFlag = false;
+
+    private boolean interceptorFlag = false;
 
     // 模拟查询用户信息
     public String queryUserInfo() {
@@ -37,6 +38,7 @@ public class UserService implements InitializingBean, DisposableBean {
     public void afterPropertiesSet() {
         // 不再只打印，而是记录状态
         System.out.println("执行初始化方法...");
+        System.out.println("qwq");
         statusRecorder.append("init_done");
     }
 
