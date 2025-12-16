@@ -11,7 +11,6 @@ import cn.xuele.minispring.beans.factory.BeanFactory;
 import cn.xuele.minispring.beans.factory.BeanFactoryAware;
 import cn.xuele.minispring.beans.factory.ListableBeanFactory;
 import cn.xuele.minispring.beans.factory.config.InstantiationAwareBeanPostProcessor;
-import cn.xuele.minispring.beans.factory.support.DefaultListableBeanFactory;
 
 import java.util.Collection;
 import java.util.Map;

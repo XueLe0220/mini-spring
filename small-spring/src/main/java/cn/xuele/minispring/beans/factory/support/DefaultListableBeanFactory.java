@@ -2,18 +2,18 @@ package cn.xuele.minispring.beans.factory.support;
 
 
 import cn.xuele.minispring.beans.BeansException;
-import cn.xuele.minispring.beans.factory.BeanFactory;
 import cn.xuele.minispring.beans.factory.BeanFactoryAware;
-import cn.xuele.minispring.beans.factory.ConfigurableBeanFactory;
-import cn.xuele.minispring.beans.factory.ListableBeanFactory;
+import cn.xuele.minispring.beans.factory.ConfigurableListableBeanFactory;
 import cn.xuele.minispring.beans.factory.config.BeanDefinition;
 import cn.xuele.minispring.beans.factory.config.BeanReference;
 import cn.xuele.minispring.beans.factory.DisposableBean;
 import cn.xuele.minispring.beans.factory.InitializingBean;
 import cn.xuele.minispring.beans.PropertyValue;
 import cn.xuele.minispring.beans.factory.config.BeanPostProcessor;
+import cn.xuele.minispring.beans.factory.config.DisposableBeanAdapter;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author XueLe
  */
-public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry implements ListableBeanFactory, ConfigurableBeanFactory, BeanDefinitionRegistry {
+public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 
 
     // 存储 Bean 定义的容器
@@ -44,38 +44,53 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
             return singleton;
         }
 
-
         // 获取 bean 定义，若没有 则抛出异常
         BeanDefinition beanDefinition = beanMap.get(name);
         if (null == beanDefinition) {
             throw new BeansException("No bean named '" + name + "' is defined");
         }
 
+        // 判断 bean 的作用域
+        String scope = beanDefinition.getScope();
+        if (BeanDefinition.SCOPE_PROTOTYPE.equals(scope)) {
+            return createBean(name, beanDefinition);
+        }
+
         // 实例化并填充属性
+        Object bean = createBean(name, beanDefinition);
+
+        // 注册有销毁方法的 Bean
+        registerDisposableBeanIfNecessary(name, bean, beanDefinition);
+
+        // 添加进注册表
+        addSingleton(name, bean);
+
+        return bean;
+
+    }
+
+    private Object createBean(String beanName, BeanDefinition beanDefinition) {
         try {
             Class<?> beanClass = beanDefinition.getBeanClass();
             // 实例化--暂时只支持无参构造
             Object bean = beanClass.getConstructor().newInstance();
 
-
             // 属性填充
             applyPropertyValues(bean, beanDefinition);
 
             // bean 初始化 在这一步完成对实例化 bean 的后置处理
-            bean = initializeBean(name, bean, beanDefinition);
+            return initializeBean(beanName, bean, beanDefinition);
 
-            // 查询是否需要随容器消亡
-            if (bean instanceof DisposableBean) {
-                addDisposableBean(name, (DisposableBean) bean);
-            }
-
-            // 添加进注册表
-            addSingleton(name, bean);
-
-
-            return bean;
         } catch (Exception e) {
-            throw new BeansException("Failed to instantiate bean '" + name + "'", e);
+            throw new BeansException("Failed to instantiate bean '" + beanName + "'", e);
+        }
+    }
+
+    private void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {
+        // 1. bean 实现 Disposable 接口 || 配置了 destroy-method
+        if (bean instanceof DisposableBean || beanDefinition.getDestroyMethodName() != null && !beanDefinition.getDestroyMethodName().isEmpty()) {
+            // 包装成统一的 adapter 添加进 DisposableList
+            addDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, beanDefinition));
         }
     }
 
@@ -119,9 +134,9 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
      * 遍历 BeanDefinition 中的属性列表，利用反射机制，
      * 暴力访问（setAccessible）对象的私有字段并赋值。
      *
-     * @param bean           已实例化的 Bean 对象
-     * @param beanDefinition Bean 的定义信息
-     * @throws Exception 反射操作异常
+     * @param bean           - 已实例化的 Bean 对象
+     * @param beanDefinition - Bean 的定义信息
+     * @throws Exception - 反射操作异常
      */
     private void applyPropertyValues(Object bean, BeanDefinition beanDefinition) throws Exception {
 
@@ -157,7 +172,7 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
      * @param beanName       -  bean名称
      * @param bean           - 实例化的 bean
      * @param beanDefinition = bean 的定义信息
-     * @return
+     * @return 初始化后的 bean
      */
     private Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) {
 
@@ -175,8 +190,10 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
         }
 
         // bean 初始化
-        if (bean instanceof InitializingBean) {
-            ((InitializingBean) bean).afterPropertiesSet();
+        try {
+            invokeInitMethods(beanName, bean, beanDefinition);
+        } catch (Exception e) {
+            throw new BeansException("Invocation of init method of bean[" + beanName + "] failed", e);
         }
 
         // 后置处理
@@ -191,4 +208,51 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
 
     }
 
+    /**
+     * 执行初始化方法
+     * 优先级：InitializingBean 接口 > XML init-method
+     */
+    private void invokeInitMethods(String beanName, Object bean, BeanDefinition beanDefinition) throws Exception {
+        // 1. 实现接口的方式
+        if (bean instanceof InitializingBean) {
+            ((InitializingBean) bean).afterPropertiesSet();
+        }
+
+        // 2. XML 配置的方式
+        String initMethodName = beanDefinition.getInitMethodName();
+        // 判断不为空，且避免和接口方法重名（防止执行两次）
+        if (initMethodName != null && !initMethodName.isEmpty()) {
+            // 如果配置的方法名和 InitializingBean 的方法名一样，且已经执行过了，就跳过
+            if (bean instanceof InitializingBean && "afterPropertiesSet".equals(initMethodName)) {
+                return;
+            }
+
+            // 反射调用
+            Method initMethod = beanDefinition.getBeanClass().getMethod(initMethodName);
+            if (initMethod == null) {
+                throw new BeansException("Could not find an init method named '" + initMethodName + "' on bean with " +
+                        "name '" + beanName + "'");
+            }
+            initMethod.invoke(bean);
+        }
+    }
+
+    @Override
+    public BeanDefinition getBeanDefinition(String beanName) throws BeansException {
+        BeanDefinition beanDefinition = beanMap.get(beanName);
+        if (beanDefinition == null) {
+            throw new BeansException("No bean named '" + beanName + "' is defined");
+        }
+        return beanDefinition;
+    }
+
+    @Override
+    public void preInstantiateSingletons() throws BeansException {
+        for (String beanName : beanMap.keySet()) {
+            BeanDefinition beanDefinition = beanMap.get(beanName);
+            if (beanDefinition.isSingleton()) {
+                getBean(beanName);
+            }
+        }
+    }
 }

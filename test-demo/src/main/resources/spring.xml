@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
 
-    <bean id="userService" class="cn.xuele.test.bean.UserService">
+    <bean id="userService" class="cn.xuele.test.bean.UserService" destroy-method="destroy">
         <property name="userName" value="UserFromXML"/>
     </bean>
 
     <bean id="orderService" class="cn.xuele.test.bean.OrderService">
         <property name="shopName" value="Tencent Store"/>
         <property name="userService" ref="userService"/>
+    </bean>
+
+    <bean id="prototypeService" class="cn.xuele.test.bean.PrototypeService" scope="prototype">
+
     </bean>
 
 </beans>

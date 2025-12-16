@@ -20,9 +20,28 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class BeanDefinition {
+
+    public static final String SCOPE_SINGLETON = "singleton";
+    public static final String SCOPE_PROTOTYPE = "prototype";
+
+    /** bean 类型 */
     private Class<?> beanClass;
-    // 防止空指针
+
+    /** 属性列表 */
     private List<PropertyValue> propertyValueList = new ArrayList<>();
+
+    /** bean 作用域，默认为单例 */
+    private String scope = SCOPE_SINGLETON;
+
+    /** 初始化方法 */
+    private String initMethodName;
+
+    /** destroy 方法 */
+    private String destroyMethodName;
+
+    private boolean singleton = true;
+
+    private boolean prototype = false;
 
     public BeanDefinition(Class<?> beanClass){
         this.beanClass = beanClass;
@@ -31,4 +50,11 @@ public class BeanDefinition {
     public void addProperty(PropertyValue propertyValue){
         propertyValueList.add(propertyValue);
     }
+
+    public void setScope(String scope){
+        this.scope = scope;
+        this.singleton = SCOPE_SINGLETON.equals(scope);
+        this.prototype = SCOPE_PROTOTYPE.equals(scope);
+    }
+
 }

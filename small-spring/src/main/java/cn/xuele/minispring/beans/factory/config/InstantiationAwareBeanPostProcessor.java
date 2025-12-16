@@ -4,7 +4,7 @@ import cn.xuele.minispring.beans.BeansException;
 
 /**
  * BeanPostProcessor 的子接口
- * 在 Spring 源码中，AOP 代理通常是通过实现此接口的类来完成的
+ *
  * @author XueLe
  */
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
@@ -16,5 +16,5 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
         return null;
     }
 
-    // 我们主要关注父接口的 postProcessAfterInitialization
+
 }

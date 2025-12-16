@@ -1,7 +1,7 @@
 package cn.xuele.minispring.beans.factory;
 
 import cn.xuele.minispring.beans.BeansException;
-import cn.xuele.minispring.beans.factory.config.BeanDefinition;
+
 
 /**
  * Spring 容器的顶层接口

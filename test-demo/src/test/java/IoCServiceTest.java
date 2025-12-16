@@ -10,6 +10,8 @@ import cn.xuele.minispring.beans.factory.config.BeanReference;
 import cn.xuele.minispring.beans.factory.support.DefaultListableBeanFactory;
 import cn.xuele.minispring.beans.factory.support.DefaultSingletonBeanRegistry;
 import cn.xuele.minispring.beans.factory.support.XmlBeanDefinitionReader;
+import cn.xuele.minispring.context.ApplicationContext;
+import cn.xuele.minispring.context.ClassPathXmlApplicationContext;
 import cn.xuele.minispring.core.io.ClassPathResource;
 import cn.xuele.minispring.core.io.DefaultResourceLoader;
 import cn.xuele.minispring.core.io.FileSystemResource;
@@ -256,5 +258,34 @@ public class IoCServiceTest {
         assertEquals("Tencent Store", orderService.getShopName());
         assertSame(orderService.getUserService(), userService);
 
+    }
+
+    @Test
+    public void test_application_context() {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        UserService userService = (UserService) applicationContext.getBean("userService");
+        assertNotNull(userService);
+        assertEquals("UserFromXML", userService.getUserName());
+    }
+
+    @Test
+    public void test_bean_xml_lifecycle() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+
+        UserService userService = (UserService) applicationContext.getBean("userService");
+
+        applicationContext.close();
+        String statusAfterClose = userService.getStatusRecorder().toString();
+
+        assertEquals("init_done_destroy_done", statusAfterClose, "容器关闭时应该自动执行销毁方法");
+
+    }
+
+    @Test
+    public void test_scope_prototype() {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        Object prototypeService1 = applicationContext.getBean("prototypeService");
+        Object prototypeService2 = applicationContext.getBean("prototypeService");
+        assertNotSame(prototypeService2, prototypeService1);
     }
 }

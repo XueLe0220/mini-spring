@@ -11,7 +11,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class UserService implements InitializingBean, DisposableBean {
+public class UserService implements InitializingBean {
 
     private String userName;
     private final StringBuilder statusRecorder = new StringBuilder();
@@ -26,7 +26,6 @@ public class UserService implements InitializingBean, DisposableBean {
     }
 
     // Bean 销毁方法
-    @Override
     public void destroy() {
         // 记录销毁状态
         System.out.println("执行销毁方法...");
