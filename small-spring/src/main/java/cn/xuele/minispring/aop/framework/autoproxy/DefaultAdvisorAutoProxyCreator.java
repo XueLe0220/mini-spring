@@ -13,7 +13,10 @@ import cn.xuele.minispring.beans.factory.ListableBeanFactory;
 import cn.xuele.minispring.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 自动代理创建器
@@ -24,6 +27,9 @@ import java.util.Map;
 public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPostProcessor, BeanFactoryAware {
 
     private ListableBeanFactory beanFactory;
+
+    // 记录已经被提前代理的 beanName ，避免重复代理
+    private Set<String> earlyProxyReferences = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -38,6 +44,31 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (earlyProxyReferences.remove(beanName)) {
+            return bean;
+        }
+        return wrapIfNecessary(bean, beanName);
+    }
+
+    // 判断 bean 是否为Advice PointCut Advisor
+    private boolean isInfrastructureClass(Class<?> beanClass) {
+        return Advice.class.isAssignableFrom(beanClass)
+                || Pointcut.class.isAssignableFrom(beanClass)
+                || Advisor.class.isAssignableFrom(beanClass);
+    }
+
+
+    @Override
+    public Object getEarlyBeanReference(Object bean, String beanName) {
+
+        // 记录提前代理过的 bean
+        earlyProxyReferences.add(beanName);
+
+        // 尝试创建代理
+        return wrapIfNecessary(bean, beanName);
+    }
+
+    private Object wrapIfNecessary(Object bean, String beanName) {
 
         // 1. 拦截基础设施 (如果 bean 为 Advice PointCut Advisor 直接返回 不能被代理)
         if (isInfrastructureClass(bean.getClass())) {
@@ -59,17 +90,7 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
                         advisor.getPointcut().getMethodMatcher())
                         .getProxy();
             }
-
         }
-        // 不匹配，原路返回
         return bean;
     }
-
-    // 判断 bean 是否为Advice PointCut Advisor
-    private boolean isInfrastructureClass(Class<?> beanClass) {
-        return Advice.class.isAssignableFrom(beanClass)
-                || Pointcut.class.isAssignableFrom(beanClass)
-                || Advisor.class.isAssignableFrom(beanClass);
-    }
-
 }

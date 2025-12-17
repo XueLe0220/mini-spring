@@ -4,7 +4,6 @@ import cn.xuele.minispring.aop.aspectj.ClassFilter;
 import cn.xuele.minispring.aop.aspectj.MethodMatcher;
 import cn.xuele.minispring.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import cn.xuele.minispring.beans.PropertyValue;
-import cn.xuele.minispring.beans.factory.BeanFactory;
 import cn.xuele.minispring.beans.factory.config.BeanDefinition;
 import cn.xuele.minispring.beans.factory.config.BeanReference;
 import cn.xuele.minispring.beans.factory.support.DefaultListableBeanFactory;
@@ -288,4 +287,7 @@ public class IoCServiceTest {
         Object prototypeService2 = applicationContext.getBean("prototypeService");
         assertNotSame(prototypeService2, prototypeService1);
     }
+
+
+
 }

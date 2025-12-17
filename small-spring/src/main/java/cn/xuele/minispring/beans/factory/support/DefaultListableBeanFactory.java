@@ -11,6 +11,7 @@ import cn.xuele.minispring.beans.factory.InitializingBean;
 import cn.xuele.minispring.beans.PropertyValue;
 import cn.xuele.minispring.beans.factory.config.BeanPostProcessor;
 import cn.xuele.minispring.beans.factory.config.DisposableBeanAdapter;
+import cn.xuele.minispring.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -50,40 +51,62 @@ public class DefaultListableBeanFactory extends DefaultSingletonBeanRegistry imp
             throw new BeansException("No bean named '" + name + "' is defined");
         }
 
-        // 判断 bean 的作用域
-        String scope = beanDefinition.getScope();
-        if (BeanDefinition.SCOPE_PROTOTYPE.equals(scope)) {
-            return createBean(name, beanDefinition);
-        }
-
-        // 实例化并填充属性
-        Object bean = createBean(name, beanDefinition);
-
-        // 注册有销毁方法的 Bean
-        registerDisposableBeanIfNecessary(name, bean, beanDefinition);
-
-        // 添加进注册表
-        addSingleton(name, bean);
-
-        return bean;
+        return createBean(name, beanDefinition);
 
     }
 
     private Object createBean(String beanName, BeanDefinition beanDefinition) {
-        try {
-            Class<?> beanClass = beanDefinition.getBeanClass();
-            // 实例化--暂时只支持无参构造
-            Object bean = beanClass.getConstructor().newInstance();
 
-            // 属性填充
+        Object bean = null;
+
+        try {
+
+            // 1. 实例化
+            Class<?> beanClass = beanDefinition.getBeanClass();
+            bean = beanClass.getConstructor().newInstance();
+
+            // 2. 如果是单例,提前暴露给工厂
+            if (beanDefinition.isSingleton()) {
+                Object finalBean = bean;
+                addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, beanDefinition, finalBean));
+            }
+
+            // 3. 属性填充
             applyPropertyValues(bean, beanDefinition);
 
-            // bean 初始化 在这一步完成对实例化 bean 的后置处理
-            return initializeBean(beanName, bean, beanDefinition);
+            // 4. bean 初始化 在这一步完成对实例化 bean 的后置处理
+            bean = initializeBean(beanName, bean, beanDefinition);
 
         } catch (Exception e) {
             throw new BeansException("Failed to instantiate bean '" + beanName + "'", e);
         }
+
+        // 5. 注册有销毁方法的 Bean
+        registerDisposableBeanIfNecessary(beanName, bean, beanDefinition);
+
+        // 6. 如果是单例，添加到一级缓存
+        if (beanDefinition.isSingleton()) {
+            Object exposedObject = getSingleton(beanName);
+            if (exposedObject != null) {
+                bean = exposedObject;
+            }
+            addSingleton(beanName, bean);
+        }
+
+        return bean;
+    }
+
+    private Object getEarlyBeanReference(String beanName, BeanDefinition beanDefinition, Object bean) {
+        Object exposedObject = bean;
+        for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                exposedObject =
+                        ((InstantiationAwareBeanPostProcessor) beanPostProcessor).getEarlyBeanReference(exposedObject
+                                , beanName);
+                if (exposedObject == null) return null;
+            }
+        }
+        return exposedObject;
     }
 
     private void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {

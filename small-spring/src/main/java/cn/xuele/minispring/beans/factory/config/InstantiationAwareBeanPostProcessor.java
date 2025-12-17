@@ -16,5 +16,16 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
         return null;
     }
 
+    /**
+     * 提前暴露 Bean 引用
+     * 用于解决循环依赖时，提前生成代理对象
+     * * @param bean 原始对象
+     * @param beanName bean名称
+     * @return 可能是原始对象，也可能是代理对象
+     */
+    default Object getEarlyBeanReference(Object bean, String beanName) {
+        return bean;
+    }
+
 
 }
